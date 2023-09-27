@@ -1,8 +1,6 @@
 package br.edu.unifal.service;
 
-import br.edu.unifal.excepition.DuplicatedChoreException;
-import br.edu.unifal.excepition.InvalidDeadlineException;
-import br.edu.unifal.excepition.InvalidDescriptionException;
+import br.edu.unifal.excepition.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -77,5 +75,38 @@ public class ChoreServiceTest {
         );
     }
 
+    @Test
+    @DisplayName("#deleteChore > When the list is empty > Throw an exception")
+    void deleteChoreWhenTheListIsEmptyThrownAnException(){
+        ChoreService service = new ChoreService();
+        assertThrows(EmptyChoreListException.class, () ->{
+            service.deleteChore("Lavar a roupa",LocalDate.now());
+        });
+    }
+
+    @Test
+    @DisplayName("#deleteChore > When the list is not empty > When the chore doesn't exist > Throw an exception")
+    void deleteChoreWhenTheListIsNotEmptyWhenTheChoreDoesNotExistThrowAnException(){
+       ChoreService service = new ChoreService();
+       service.addChore("Description", LocalDate.now());
+       assertThrows(ChoreNotFoundException.class, ()->{
+           service.deleteChore("Chore to be deleted", LocalDate.now().plusDays(2));
+       });
+
+    }
+
+    @Test
+    @DisplayName("#deleteChore > When the list is not empty > When the chore exists > Delete the chore")
+    void deleteChoreWhenTheListIsnotEmptyWhenTheChoreExistsDeleteTheChore(){
+        ChoreService service = new ChoreService();
+
+        service.addChore("Chore: #01", LocalDate.now().plusDays(1));
+        assertEquals(1, service.getChores().size());
+
+        assertDoesNotThrow(()-> service.deleteChore("Chore: #01", LocalDate.now().plusDays(1)));
+        assertEquals(0, service.getChores().size());
+
+
+    }
 
 }
