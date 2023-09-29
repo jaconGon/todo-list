@@ -1,12 +1,14 @@
 package br.edu.unifal.service;
 
 import br.edu.unifal.domain.Chore;
+import br.edu.unifal.enumerator.ChoreFilter;
 import br.edu.unifal.excepition.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -118,7 +120,7 @@ public class ChoreServiceTest {
         service.addChore("Chore 1", LocalDate.now());
         assertFalse(service.getChores().get(0).getIsCompleted());
 
-        assertDoesNotThrow(()-> service.toggleChore("chore 1", LocalDate.now()));
+        assertDoesNotThrow(()-> service.toggleChore("Chore 1", LocalDate.now()));
 
         assertTrue(service.getChores().get(0).getIsCompleted());
 
@@ -169,6 +171,72 @@ public class ChoreServiceTest {
         service.getChores().add(new Chore("Chore 1", Boolean.TRUE ,LocalDate.now().minusDays(1)));
         assertThrows(TogglechoreWithInvalidedeadlineexception.class, ()->
                 service.toggleChore("Chore 1",LocalDate.now().minusDays(1))
+        );
+    }
+
+    @Test
+    @DisplayName("#filterChores > When the filter is ALL > When the list is empty > Return all chores")
+    void filterChoresWhenTheFilterIsAllWhenTheListIsEmptyReturnAllChores(){
+        ChoreService service = new ChoreService();
+        List<Chore> response = service.filterChores(ChoreFilter.ALL);
+        assertTrue(response.isEmpty());
+    }
+
+    @Test
+    @DisplayName("#filterChores > When the filter is ALL > When the list is not empty > Return all chores")
+    void filterChoresWhenTheFilterIsAllWhenTheListIsNotEmptyReturnAllChores(){
+        ChoreService service = new ChoreService();
+        service.getChores().add(new Chore("Chore 1", Boolean.FALSE , LocalDate.now()));
+        service.getChores().add(new Chore("Chore 2", Boolean.TRUE , LocalDate.now().plusDays(1)));
+        List<Chore> response = service.filterChores(ChoreFilter.ALL);
+        assertAll(
+                ()->assertEquals(2, response.size()),
+                ()-> assertEquals("Chore 1", response.get(0).getDescription()),
+                ()-> assertEquals("Chore 2", response.get(1).getDescription())
+        );
+    }
+
+    @Test
+    @DisplayName("#filterChores > When the filter is COMPLETED > When the list is empty > Return an empty list")
+    void filterChoreWhenTheFilterIsCompletedWhenTheListIsEmptyReturnAnEmptyList(){
+        ChoreService service = new ChoreService();
+        List<Chore> response = service.filterChores(ChoreFilter.COMPLETED);
+        assertTrue(response.isEmpty());
+    }
+
+    @Test
+    @DisplayName("#filterChores > When the filter is COMPLETED > When the list is not empty > Return the filtered chores")
+    void filterChoreWhenTheFilterIsCompletedWhenTheListIsNotEmptyReturnTheFilteredChores(){
+        ChoreService service = new ChoreService();
+        service.getChores().add(new Chore("Chore 1", Boolean.FALSE , LocalDate.now()));
+        service.getChores().add(new Chore("Chore 2", Boolean.TRUE , LocalDate.now().plusDays(1)));
+        List<Chore> response = service.filterChores(ChoreFilter.COMPLETED);
+        assertAll(
+                ()-> assertEquals(1, response.size()),
+                ()-> assertEquals("Chore 2", response.get(0).getDescription()),
+                ()-> assertEquals(Boolean.TRUE , response.get(0).getIsCompleted())
+        );
+    }
+
+    @Test
+    @DisplayName("#filterChores > When the filter is UNCOMPLETED > When the list is empty > Return an empty list")
+    void filterChoreWhenTheFilterIsUncompletedWhenTheListIsEmptyReturnAnEmptyList(){
+        ChoreService service = new ChoreService();
+        List<Chore> response = service.filterChores(ChoreFilter.UNCOMPLETED);
+        assertTrue(response.isEmpty());
+    }
+
+    @Test
+    @DisplayName("#filterChores > When the filter is UNCOMPLETED > When the list is not empty > Return the filtered chores")
+    void filterChoreWhenTheFilterIsUncompletedWhenTheListIsNotEmptyReturnTheFilteredChores(){
+        ChoreService service = new ChoreService();
+        service.getChores().add(new Chore("Chore 1", Boolean.FALSE , LocalDate.now()));
+        service.getChores().add(new Chore("Chore 2", Boolean.TRUE , LocalDate.now().plusDays(1)));
+        List<Chore> response = service.filterChores(ChoreFilter.UNCOMPLETED);
+        assertAll(
+                ()-> assertEquals(1, response.size()),
+                ()-> assertEquals("Chore 1", response.get(0).getDescription()),
+                ()-> assertEquals(Boolean.FALSE , response.get(0).getIsCompleted())
         );
     }
 
