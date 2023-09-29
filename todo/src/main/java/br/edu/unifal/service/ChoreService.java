@@ -75,6 +75,25 @@ public class ChoreService {
                 && !chore.getDeadline().isEqual(deadline)).collect(Collectors.toList());
     }
 
+    public void toggleChore (String description, LocalDate deadline){
+        boolean ischoreExist = this.chores.stream().anyMatch((chore) ->
+                        chore.getDescription().equals(description) &&
+                        chore.getDeadline().isEqual(deadline)
+                );
+        if(!ischoreExist){
+            throw new ChoreNotFoundException("Chore not found,. Impossible to toggle");
+        }
 
+        this.chores.stream().map(chore -> {
+         if(!chore.getDescription().equals(description) && !chore.getDeadline().isEqual(deadline)){
+            return chore;
+         }
+         if (chore.getDeadline().isBefore(LocalDate.now()) && chore.getIsCompleted()){
+             throw new TogglechoreWithInvalidedeadlineexception("Unable to toggle a complet chore");
+         }
+         chore.setIsCompleted(!chore.getIsCompleted());
+         return  chore;
+         }).collect((Collectors.toList()));
+    }
     private final Predicate<List<Chore>> isChoreListEmpty = chorelist -> chorelist.isEmpty();
 }
