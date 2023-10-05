@@ -260,4 +260,24 @@ public class ChoreServiceTest {
                       service.printChores());
     }
 
+    @Test
+    @DisplayName("#editChores > When the chore doesn't exist > Throw an exception")
+    void editChoresWhenTheChoreDoesnotExistThrowAnexception(){
+        ChoreService service = new ChoreService();
+        service.addChore("Chore 2",LocalDate.now().plusDays(5));
+        assertThrows(ChoreNotFoundException.class,()-> service.editChore("Chore 1",LocalDate.now(),"Lavar louça",LocalDate.now().plusDays(1)));
+    }
+
+    @Test
+    @DisplayName("#editChores > When the chore exists > Update the chore")
+    void editChoresWhenTheChoreExistsUpdateTheChore(){
+        ChoreService service = new ChoreService();
+        service.addChore("Chore 1",LocalDate.now().plusDays(3));
+        List<Chore> response = service.editChore("Chore 1", LocalDate.now().plusDays(3), "Lavar louca",LocalDate.now().plusDays(1));
+        assertAll(
+                ()-> assertEquals("Lavar louca", response.get(0).getDescription()),
+                ()-> assertEquals(LocalDate.now().plusDays(1) , response.get(0).getDeadline())
+        );
+    }
+
 }
