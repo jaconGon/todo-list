@@ -3,15 +3,15 @@ package br.edu.unifal.service;
 import br.edu.unifal.domain.Chore;
 import br.edu.unifal.enumerator.ChoreFilter;
 import br.edu.unifal.excepition.*;
-import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 public class ChoreServiceTest {
 
@@ -254,9 +254,9 @@ public class ChoreServiceTest {
         service.addChore("Chore 1",LocalDate.now().plusDays(3));
         service.addChore("Chore 2",LocalDate.now().plusDays(2));
         service.addChore("Chore 3",LocalDate.now().plusDays(1));
-        assertEquals("Description: Chore 1 - Deadline: 2023-10-08 - Status: Incompleta\n" +
-                     "Description: Chore 2 - Deadline: 2023-10-07 - Status: Incompleta\n" +
-                     "Description: Chore 3 - Deadline: 2023-10-06 - Status: Incompleta\n",
+        assertEquals("Description: Chore 1 - Deadline: "+ LocalDate.now().plusDays(3) +" - Status: Incompleta\n" +
+                     "Description: Chore 2 - Deadline: "+ LocalDate.now().plusDays(2) +" - Status: Incompleta\n" +
+                     "Description: Chore 3 - Deadline: "+ LocalDate.now().plusDays(1) +" - Status: Incompleta\n",
                       service.printChores());
     }
 
@@ -280,4 +280,50 @@ public class ChoreServiceTest {
         );
     }
 
+    @Test
+    @DisplayName("#readFile > When file is empty > Throw an Exception")
+    void readFileWhenFileIsEmptyThrowAnException(){
+        ChoreService service = new ChoreService();
+        File emptyFile = new File("./src/test/resources/empty.json");
+        assertThrows(FileIsEmptyException.class,
+                () -> service.readFile(emptyFile));
+    }
+
+    @Test
+    @DisplayName("#readFile > When read the file > When the deadline is invalid > Throw an Exception")
+    void readFileWhenDeadlineIsInvalidThrowAnException(){
+        ChoreService service = new ChoreService();
+        File invalidDeadlineFile = new File("./src/test/resources/invalid_deadline.json");
+        assertThrows(InvalidDeadlineException.class,
+                () -> service.readFile(invalidDeadlineFile));
+    }
+
+    @Test
+    @DisplayName("#readFile > When read the file > When the description is invalid > Throw an Exception")
+    void readFileWhenDescriptionIsInvalidThrowAnException(){
+        ChoreService service = new ChoreService();
+        File invalidDescriptionFile = new File("./src/test/resources/invalid_description.json");
+        assertThrows(InvalidDescriptionException.class,
+                () -> service.readFile(invalidDescriptionFile));
+    }
+
+    @Test
+    @DisplayName("#readFile > When read the file > When duplicated chores > Throw an Exception")
+    void readFileWhenDuplicatedChoresThrowAnException(){
+        ChoreService service = new ChoreService();
+        File duplicatedChoresFile = new File("./src/test/resources/duplicated_chores.json");
+        assertThrows(DuplicatedChoreException.class,
+                () -> service.readFile(duplicatedChoresFile));
+    }
+
+    @Test
+    @DisplayName("#readFile > When read the file > Read the file and add to chores")
+    void readFileAndAddToChores(){
+        ChoreService service = new ChoreService();
+        File file = new File("./src/test/resources/chores.json");
+        assertDoesNotThrow(() -> service.readFile(file));
+    }
+
 }
+
+
