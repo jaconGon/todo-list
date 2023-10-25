@@ -3,17 +3,36 @@ package br.edu.unifal.service;
 import br.edu.unifal.domain.Chore;
 import br.edu.unifal.enumerator.ChoreFilter;
 import br.edu.unifal.excepition.*;
+import br.edu.unifal.repository.ChoreRepository;
+import br.edu.unifal.repository.impl.FileChoreRepository;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 import java.io.File;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ChoreServiceTest {
+
+    @InjectMocks
+    private  ChoreService service;
+
+    @Mock
+    private ChoreRepository repository;
+
+    @BeforeEach
+    public void setup(){
+        MockitoAnnotations.openMocks(this);
+    }
 
     @Test
     void addChoreWhenTheDescriptionIsInvalidThrowAnException(){
@@ -280,48 +299,36 @@ public class ChoreServiceTest {
         );
     }
 
+
     @Test
-    @DisplayName("#readFile > When file is empty > Throw an Exception")
-    void readFileWhenFileIsEmptyThrowAnException(){
-        ChoreService service = new ChoreService();
-        File emptyFile = new File("./src/test/resources/empty.json");
-        assertThrows(FileIsEmptyException.class,
-                () -> service.readFile(emptyFile));
+    @DisplayName("#loadChores > When read the file > Upload the chores")
+    void loadChoresAndUploadChores(){
+        Mockito.when(repository.load()).thenReturn(new ArrayList<>() {{
+            add(new Chore("Chore 1",Boolean.FALSE, LocalDate.now()));
+            add(new Chore("Chore 2",Boolean.FALSE, LocalDate.now().plusDays(3)));
+        }});
+        service.loadChores();
+        //int size = service.getChores().size();
+        //assertEquals(2,size);
+        List<Chore> loadedChores = service.getChores();
+        assertAll(
+                ()-> assertEquals(2,loadedChores.size()),
+                ()-> assertEquals("Chore 1",loadedChores.get(0).getDescription()),
+                ()-> assertEquals(Boolean.FALSE,loadedChores.get(0).getIsCompleted()),
+                ()-> assertEquals(LocalDate.now(),loadedChores.get(0).getDeadline()),
+                ()-> assertEquals("Chore 2",loadedChores.get(1).getDescription()),
+                ()-> assertEquals(Boolean.FALSE,loadedChores.get(1).getIsCompleted()),
+                ()-> assertEquals(LocalDate.now().plusDays(3),loadedChores.get(1).getDeadline())
+        );
     }
 
     @Test
-    @DisplayName("#readFile > When read the file > When the deadline is invalid > Throw an Exception")
-    void readFileWhenDeadlineIsInvalidThrowAnException(){
-        ChoreService service = new ChoreService();
-        File invalidDeadlineFile = new File("./src/test/resources/invalid_deadline.json");
-        assertThrows(InvalidDeadlineException.class,
-                () -> service.readFile(invalidDeadlineFile));
-    }
-
-    @Test
-    @DisplayName("#readFile > When read the file > When the description is invalid > Throw an Exception")
-    void readFileWhenDescriptionIsInvalidThrowAnException(){
-        ChoreService service = new ChoreService();
-        File invalidDescriptionFile = new File("./src/test/resources/invalid_description.json");
-        assertThrows(InvalidDescriptionException.class,
-                () -> service.readFile(invalidDescriptionFile));
-    }
-
-    @Test
-    @DisplayName("#readFile > When read the file > When duplicated chores > Throw an Exception")
-    void readFileWhenDuplicatedChoresThrowAnException(){
-        ChoreService service = new ChoreService();
-        File duplicatedChoresFile = new File("./src/test/resources/duplicated_chores.json");
-        assertThrows(DuplicatedChoreException.class,
-                () -> service.readFile(duplicatedChoresFile));
-    }
-
-    @Test
-    @DisplayName("#readFile > When read the file > Read the file and add to chores")
-    void readFileAndAddToChores(){
-        ChoreService service = new ChoreService();
-        File file = new File("./src/test/resources/chores.json");
-        assertDoesNotThrow(() -> service.readFile(file));
+    @DisplayName("#loadChores > When no chores are loaded > update the chore list")
+    void loadChoreWhenNoChoresAreloadedupdateThechoreList(){
+        Mockito.when(repository.load()).thenReturn(new ArrayList<>());
+        service.loadChores();
+        List<Chore> loadChores = service.getChores();
+        assertTrue(loadChores.isEmpty());
     }
 
 }

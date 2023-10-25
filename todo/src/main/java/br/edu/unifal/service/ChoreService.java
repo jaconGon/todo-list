@@ -3,8 +3,10 @@ package br.edu.unifal.service;
 import br.edu.unifal.domain.Chore;
 import br.edu.unifal.enumerator.ChoreFilter;
 import br.edu.unifal.excepition.*;
+import br.edu.unifal.repository.ChoreRepository;
+import br.edu.unifal.repository.impl.FileChoreRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import lombok.Getter;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,12 +18,24 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+@Getter
 public class ChoreService {
 
     private List<Chore> chores;
+    private ObjectMapper mapper;
+    private ChoreRepository repository;
 
     public ChoreService(){
         chores = new ArrayList<>();
+        mapper = new ObjectMapper().findAndRegisterModules();
+        repository = new FileChoreRepository() ;
+    }
+
+
+    public ChoreService(ChoreRepository repository){
+        chores = new ArrayList<>();
+        mapper = new ObjectMapper().findAndRegisterModules();
+        this.repository = repository;
     }
 
     public Chore addChore(String description, LocalDate deadline){
@@ -58,15 +72,6 @@ public class ChoreService {
     }
 
 
-    public List<Chore> getChores(){
-        return this.chores;
-    }
-
-    /**
-     *
-     * @param description -the description of the chore
-     * @param deadline -
-     */
     public void deleteChore(String description, LocalDate deadline){
         if(isChoreListEmpty.test(this.chores)){
             throw new EmptyChoreListException("Unable to remove a chore from an empty list");
@@ -103,15 +108,12 @@ public class ChoreService {
     }
 
     public List<Chore> filterChores(ChoreFilter filter){
-        switch(filter){
-            case COMPLETED:
-                return this.chores.stream().filter(Chore::getIsCompleted).collect(Collectors.toList());
-            case UNCOMPLETED:
-                return this.chores.stream().filter(chore -> !chore.getIsCompleted()).collect(Collectors.toList());
-            case ALL:
-            default:
-                return this.chores;
-        }
+        return switch (filter) {
+            case COMPLETED -> this.chores.stream().filter(Chore::getIsCompleted).collect(Collectors.toList());
+            case UNCOMPLETED ->
+                    this.chores.stream().filter(chore -> !chore.getIsCompleted()).collect(Collectors.toList());
+            default -> this.chores;
+        };
     }
 
     public String printChores(){
@@ -146,27 +148,14 @@ public class ChoreService {
         return this.chores;
     }
 
-    public void readFile(File file) {
-        if (file.length() == 0){
-            throw new FileIsEmptyException("Unable to read an empty JSON file");
-        }
-
-        List<Chore> choresJson;
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.registerModule(new JavaTimeModule());
-            choresJson = Arrays.asList(mapper.readValue(file, Chore[].class));
-        } catch (IOException e) {
-            throw new RuntimeException("Error while reading the JSON file: " + e.getMessage(), e);
-        }
-
-        choresJson.stream().forEach(chore -> {
-            addChore(chore.getDescription(),chore.getDeadline());
-            if(chore.getIsCompleted()){
-                toggleChore(chore.getDescription(),chore.getDeadline());
-            }
-        });
+    public void loadChores(){
+        this.chores = repository.load();
     }
-    private final Predicate<List<Chore>> isChoreListEmpty = chorelist -> chorelist.isEmpty();
+
+    public boolean saveChores(){
+        return repository.save(this.chores);
+    }
+
+    private final Predicate<List<Chore>> isChoreListEmpty = List::isEmpty;
 
 }
