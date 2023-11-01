@@ -8,11 +8,8 @@ import br.edu.unifal.repository.impl.FileChoreRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 
-import java.io.File;
-import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -65,9 +62,8 @@ public class ChoreService {
 //        chore.setIsCompleted(Boolean.FALSE);
 
         Chore chore = new Chore(description, Boolean.FALSE, deadline);
+        repository.save(chore);
         chores.add(chore);
-
-        // TODO: CASO DE TESTE EM QUE O CHORE SEJA ADICIONADO
         return chore;
     }
 
@@ -153,7 +149,7 @@ public class ChoreService {
     }
 
     public boolean saveChores(){
-        return repository.save(this.chores);
+        return repository.saveAll(this.chores);
     }
 
     private final Predicate<List<Chore>> isChoreListEmpty = List::isEmpty;

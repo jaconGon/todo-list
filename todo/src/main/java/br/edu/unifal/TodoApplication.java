@@ -12,5 +12,7 @@ public class TodoApplication {
         ChoreRepository repository = new MySQLChoreRepository();
         ChoreService service = new ChoreService(repository);
         service.loadChores();
+        service.addChore("Teste bd",LocalDate.now());
+        System.out.println("tamanho da lista de chores: " + service.getChores().size());
     }
 }
