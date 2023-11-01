@@ -4,8 +4,6 @@ import br.edu.unifal.domain.Chore;
 import br.edu.unifal.enumerator.ChoreFilter;
 import br.edu.unifal.excepition.*;
 import br.edu.unifal.repository.ChoreRepository;
-import br.edu.unifal.repository.impl.FileChoreRepository;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import java.io.File;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -334,14 +331,14 @@ public class ChoreServiceTest {
     @Test
     @DisplayName("#saveChores > When the save is completed > Return True")
     void saveChoresWhenTheSaveIsCompletedReturnTrue(){
-        Mockito.when(repository.save(service.getChores())).thenReturn(true);
+        Mockito.when(repository.saveAll(service.getChores())).thenReturn(true);
         assertTrue(service.saveChores());
     }
 
     @Test
     @DisplayName("#saveChores > When the save fails > Return False")
     void saveChoresWhenTheSaveFailsReturnFalse(){
-        Mockito.when(repository.save(service.getChores())).thenReturn(false);
+        Mockito.when(repository.saveAll(service.getChores())).thenReturn(false);
         assertFalse(service.saveChores());
     }
 
