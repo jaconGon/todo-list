@@ -342,6 +342,27 @@ public class ChoreServiceTest {
         assertFalse(service.saveChores());
     }
 
+
+    @Test
+    @DisplayName("#updateChore > When the chore doesnt exists > Return False")
+    void updateChoreWhenTheChoreDoesNotExistsReturnFalse(){
+        Mockito.when(repository.update(null)).thenThrow(ChoreNotFoundException.class);
+        assertFalse(service.updateChore(null));
+    }
+
+    @Test
+    @DisplayName("#updateChore > When the chore exists > Update the chore and return True")
+    void updateChoreWhenTheChoreExistsUpdateTheChoreAndReturnTrue(){
+        service.getChores().add(new Chore("Description #01", Boolean.FALSE, LocalDate.now()));
+        service.getChores().get(0).setDescription("Updated description");
+        Mockito.when(repository.update(service.getChores().get(0))).thenReturn(Boolean.TRUE);
+
+        assertAll(
+                () -> assertTrue(repository.update(service.getChores().get(0))),
+                () -> assertEquals("Updated description",service.getChores().get(0).getDescription())
+        );
+    }
+
 }
 
 
