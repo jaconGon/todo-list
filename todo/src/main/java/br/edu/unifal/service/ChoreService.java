@@ -114,14 +114,14 @@ public class ChoreService {
 
     public String printChores(){
         if(isChoreListEmpty.test(this.chores)){
-            throw new EmptyChoreListException("Unable to remove a chore from an empty list");
+            throw new EmptyChoreListException("Unable to print an empty list");
         }
         StringBuilder retorno = new StringBuilder();
         for(Chore chore : chores){
             if(chore.getIsCompleted()) {
-                retorno.append("Description: ").append(chore.getDescription()).append(" - Deadline: ").append(chore.getDeadline()).append(" - Status: Completa\n");
+                retorno.append("Id:").append(chore.getId()).append("Description: ").append(chore.getDescription()).append(" - Deadline: ").append(chore.getDeadline()).append(" - Status: Completa\n");
             }else {
-                retorno.append("Description: ").append(chore.getDescription()).append(" - Deadline: ").append(chore.getDeadline()).append(" - Status: Incompleta\n");
+                retorno.append("Id:").append(chore.getId()).append("Description: ").append(chore.getDescription()).append(" - Deadline: ").append(chore.getDeadline()).append(" - Status: Incompleta\n");
             }
         }
         return retorno.toString();
@@ -150,6 +150,13 @@ public class ChoreService {
 
     public boolean saveChores(){
         return repository.saveAll(this.chores);
+    }
+
+    public Boolean updateChore(Chore chore){
+        if(Objects.isNull(chore)){
+            return Boolean.FALSE;
+        }
+        return repository.update(chore);
     }
 
     private final Predicate<List<Chore>> isChoreListEmpty = List::isEmpty;

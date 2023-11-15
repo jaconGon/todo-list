@@ -35,21 +35,26 @@ public class MySQLChoreRepository implements ChoreRepository {
         }
         try {
             statement = connection.createStatement();
-            resultSet = statement.executeQuery(ChoreBook.FIND_ALL_CHORES);
+            resultSet = statement.executeQuery(ChoreBook.FIND_ALL_CHORES); // pegando o resultado dessa query para resultSet
 
             List<Chore> chores = new ArrayList<>();
-            while(resultSet.next()){
+            while(resultSet.next()) {
+                // Poderíamos ter criado a Chore usando o construtor completo
+                // OU poderíamos ter usado o construtor padrão + ter dado sets
                 Chore chore = Chore.builder()
+                        .id(resultSet.getLong("id"))
                         .description(resultSet.getString("description"))
-                        .isCompleted(resultSet.getBoolean("iscompleted"))
+                        .isCompleted(resultSet.getBoolean("isCompleted"))
                         .deadline(resultSet.getDate("deadline").toLocalDate())
                         .build();
                 chores.add(chore);
             }
-            return  chores;
-        } catch (SQLException e) {
-            System.out.println("Error when connecting to database");
-        }finally {
+            return chores;
+        } catch (SQLException exception) {
+            System.err.println("Error when loading chores from database: " + exception.getMessage());
+            exception.printStackTrace();
+        }
+        finally {
             closeConnections();
         }
         return null;
@@ -92,24 +97,57 @@ public class MySQLChoreRepository implements ChoreRepository {
         }
     }
     @Override
-    public boolean save(Chore chore){
+    public boolean save(Chore chore) {
         if(!connectToMySQL()){
             return Boolean.FALSE;
         }
-        try{
+        try {
+            // Define qual a query que quer executar
+            // Query de INSERT
+            // Quando não sabe quais serão as informações
             preparedStatement = connection.prepareStatement(
                     ChoreBook.INSERT_CHORE);
+
+            // Falando que os valores ? ? ? serão nomeados, setados
             preparedStatement.setString(1, chore.getDescription());
             preparedStatement.setBoolean(2, chore.getIsCompleted());
             preparedStatement.setDate(3, Date.valueOf(chore.getDeadline()));
+
+            // Executando a query por atualização na tabela
+            // Guardando quantas linhas foram afetadas pela atualização
+            int affectedRows = preparedStatement.executeUpdate();
+            if(affectedRows > 0) {
+                return Boolean.TRUE;
+            }
+            return Boolean.FALSE;
+        } catch (SQLException exception) {
+            System.out.println("Error when inserting a new chore on database");
+        } finally {
+            closeConnections();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean update(Chore chore){
+        if(!connectToMySQL()){
+            return Boolean.FALSE;
+        }
+        try {
+            preparedStatement = connection.prepareStatement(
+                    ChoreBook.UPDATE_CHORE);
+            preparedStatement.setString(1, chore.getDescription());
+            preparedStatement.setDate(2, Date.valueOf(chore.getDeadline()));
+            preparedStatement.setLong(3, chore.getId());
+
             int affectedRows = preparedStatement.executeUpdate();
             if (affectedRows > 0){
                 return Boolean.TRUE;
             }
             return Boolean.FALSE;
-        }catch(SQLException exception){
-            System.out.println("ERROR when inserting a new chore on database");
-        } finally {
+        }catch (SQLException exception){
+            System.out.println(("Error when updating the chore on database"));
+        }finally {
             closeConnections();
         }
         return false;

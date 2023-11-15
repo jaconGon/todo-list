@@ -15,7 +15,7 @@ public class FileChoreRepository implements ChoreRepository {
 
     private ObjectMapper mapper;
 
-    public FileChoreRepository(){
+    public FileChoreRepository() {
         mapper = new ObjectMapper().findAndRegisterModules();
     }
 
@@ -25,7 +25,7 @@ public class FileChoreRepository implements ChoreRepository {
             return new ArrayList<>(
                     Arrays.asList(this.mapper.readValue(new File("chores.json"), Chore[].class))
             );
-        }catch(MismatchedInputException exception){
+        } catch (MismatchedInputException exception) {
             System.out.println("Unable to convert the content of the file into Chores");
 //            return new ArrayList<>();
         } catch (IOException exception) {
@@ -37,9 +37,9 @@ public class FileChoreRepository implements ChoreRepository {
     }
 
     @Override
-    public boolean saveAll(List<Chore> chores){
+    public boolean saveAll(List<Chore> chores) {
         try {
-            mapper.writeValue(new File("chores.json"),chores);
+            mapper.writeValue(new File("chores.json"), chores);
             return true;
         } catch (IOException exception) {
             System.out.println("ERROR: unable to write the chores on the file.");
@@ -48,7 +48,12 @@ public class FileChoreRepository implements ChoreRepository {
     }
 
     @Override
-    public boolean save(Chore chore){
-        return false;
+    public boolean save(Chore chore) {
+        throw new RuntimeException("Operation not supported yet.");
+    }
+
+    @Override
+    public boolean update(Chore chore) {
+        throw new RuntimeException("Operation not supported yet.");
     }
 }
